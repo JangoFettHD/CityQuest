@@ -13,6 +13,7 @@ import com.luseen.spacenavigation.SpaceOnClickListener;
 public class MainActivity extends FragmentActivity {
 
     SpaceNavigationView spaceNavigationView;
+    FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,18 +25,29 @@ public class MainActivity extends FragmentActivity {
         spaceNavigationView.addSpaceItem(new SpaceItem("Маркет", R.drawable.shopping_cart));
         spaceNavigationView.addSpaceItem(new SpaceItem("Профиль", R.drawable.avatar));
 
+        fragmentManager = getSupportFragmentManager();
+
         spaceNavigationView.setSpaceOnClickListener(new SpaceOnClickListener() {
             @Override
             public void onCentreButtonClick() {
                 Toast.makeText(MainActivity.this, "onCentreButtonClick", Toast.LENGTH_SHORT).show();
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                ProfileFragment profileFragment = new ProfileFragment();
-                fragmentManager.beginTransaction().add(R.id.fragment_container, profileFragment).commit();
+                MapFragment profileFragment = new MapFragment();
+                fragmentManager.beginTransaction().replace(R.id.fragment_container, profileFragment).commit();
             }
 
             @Override
             public void onItemClick(int itemIndex, String itemName) {
                 Toast.makeText(MainActivity.this, itemIndex + " " + itemName, Toast.LENGTH_SHORT).show();
+                switch (itemIndex) {
+                    case 1:
+                        ProfileFragment profileFragment0 = new ProfileFragment();
+                        fragmentManager.beginTransaction().replace(R.id.fragment_container, profileFragment0).commit();
+                        break;
+                    case 0:
+                        ShopFragment shopFragment = new ShopFragment();
+                        fragmentManager.beginTransaction().replace(R.id.fragment_container, shopFragment).commit();
+                        break;
+                }
             }
 
             @Override
