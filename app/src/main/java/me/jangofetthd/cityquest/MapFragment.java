@@ -139,6 +139,10 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
                                                                 Intent intent = new Intent(getActivity(), bitchGame.class);
                                                                 getActivity().startActivity(intent);
                                                             }
+                                                            if (marker.getZIndex() == -1) {
+                                                                Intent intent = new Intent(getActivity(), subwayGame.class);
+                                                                getActivity().startActivity(intent);
+                                                            }
                                                             dialog.cancel();
                                                         }
                                                     });
@@ -160,6 +164,18 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
 // Register the listener with the Location Manager to receive location updates
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
                 //
+
+                ////////начальный зум
+                //////////////@TODO УБРАТЬ, так как дублируется
+                CameraPosition cameraPosition;
+                if (initGeo!=null){
+                    cameraPosition = new CameraPosition.Builder().target(initGeo).zoom(18).build();
+                }else{
+                    LatLng IRK = new LatLng(52.285230, 104.306678);
+                    cameraPosition = new CameraPosition.Builder().target(IRK).zoom(16).build();
+                }
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                //////////////////////
 
                 /*MainActivity.spaceNavigationView.setSpaceOnClickListener(new SpaceOnClickListener() {
                     @Override
@@ -272,7 +288,7 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
         //начальный зум
         CameraPosition cameraPosition;
         if (initGeo!=null){
-            cameraPosition = new CameraPosition.Builder().target(initGeo).zoom(16).build();
+            cameraPosition = new CameraPosition.Builder().target(initGeo).zoom(18).build();
         }else{
             LatLng IRK = new LatLng(52.285230, 104.306678);
             cameraPosition = new CameraPosition.Builder().target(IRK).zoom(16).build();

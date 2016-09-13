@@ -3,23 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="me.jangofetthd.cityquest.bitchGame">
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="me.jangofetthd.cityquest.subwayGame">
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/bitch"
-        android:src="@drawable/bitch"
+        android:id="@+id/subway"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="100"
-        android:id="@+id/clicks"
-        android:layout_above="@+id/progress"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/subway100"
+        android:scaleType="fitCenter"
+        android:padding="15dp" />
 
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
@@ -28,11 +26,10 @@
         android:id="@+id/progress"
         android:progress="100"
         android:indeterminate="false"
-        android:layout_above="@+id/bitch"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginRight="50dp"
-        android:layout_marginLeft="50dp" />
+        android:layout_marginBottom="25dp"
+        android:layout_alignRight="@+id/subway"
+        android:layout_alignEnd="@+id/subway" />
 </RelativeLayout>
