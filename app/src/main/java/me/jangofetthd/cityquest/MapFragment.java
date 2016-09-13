@@ -82,12 +82,16 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
                 }
                 googleMap.setMyLocationEnabled(true);
 
-                IGY = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.249991, 104.264174)).title("Путешествие по ИГУ").snippet("Замечательное описание").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                for (me.jangofetthd.cityquest.Models.Marker marker : ApplicationClass.markers) {
+                    googleMap.addMarker(marker.toGoogleMarkerOptions());
+                }
+
+                /*IGY = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.249991, 104.264174)).title("Путешествие по ИГУ").snippet("Замечательное описание").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
                 subway = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.248178, 104.268964)).title("Путешествие по Сабвею").snippet("0").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 trash = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.287103, 104.309872)).title("Борьба с бомжами").snippet("Выкиньте мусор, но при этом останьтесь в живых").zIndex(2).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
                 home = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.287943, 104.310949)).title("Home.. Sweet home").snippet("Поспать").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
                 school15 = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.276300, 104.285048)).title("Выучить стих по литре").snippet("Опять работа?").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                bridge = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.259222, 104.281125)).title("Сжечь мост").snippet("Он сжег мосты, но лодочку оставил...").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                bridge = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.259222, 104.281125)).title("Сжечь мост").snippet("Он сжег мосты, но лодочку оставил...").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));*/
 
                 final Marker[] db = {IGY, subway, home, trash, school15, bridge};
 
@@ -103,7 +107,7 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
                     public void onLocationChanged(final Location location) {
                         // Called when a new location is found by the network location provider.
                         //makeUseOfNewLocation(location);
-                        checkNearMarkers(db, location);
+                        //checkNearMarkers(db, location);
 
                         initGeo = new LatLng(location.getLatitude(), location.getLongitude());
                         /////////
