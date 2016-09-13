@@ -12,6 +12,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -22,6 +23,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,7 +39,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener {
     MapView mMapView;
     private GoogleMap googleMap;
     Marker IGY;
@@ -110,6 +113,10 @@ public class MapFragment extends Fragment {
                 final Marker[] db= {IGY, subway, home, trash, school15, bridge};
 
 
+                Location f = LocationServices.FusedLocationApi.getLastLocation(
+                        MainActivity.mGoogleApiClient);
+
+
                 googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
                     @Override
                     public void onMyLocationChange(Location arg0) {
@@ -122,7 +129,7 @@ public class MapFragment extends Fragment {
 
                     }
                 });
-
+                
                 googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 
                     @Override
@@ -302,5 +309,10 @@ public class MapFragment extends Fragment {
     public void onLowMemory() {
         super.onLowMemory();
         mMapView.onLowMemory();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }

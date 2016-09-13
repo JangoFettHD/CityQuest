@@ -1,19 +1,25 @@
 package me.jangofetthd.cityquest;
 
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.luseen.spacenavigation.SpaceItem;
 import com.luseen.spacenavigation.SpaceNavigationView;
 import com.luseen.spacenavigation.SpaceOnClickListener;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     SpaceNavigationView spaceNavigationView;
     FragmentManager fragmentManager;
+
+    static GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +35,13 @@ public class MainActivity extends FragmentActivity {
 
         MapFragment profileFragment = new MapFragment();
         fragmentManager.beginTransaction().replace(R.id.fragment_container, profileFragment).commit();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */,
+                        this /* OnConnectionFailedListener */)
+                .addApi(LocationServices.API)
+                .setAccountName("jangofetthd@gmail.com")
+                .build();
 
         spaceNavigationView.setSpaceOnClickListener(new SpaceOnClickListener() {
             @Override
@@ -64,5 +77,10 @@ public class MainActivity extends FragmentActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         spaceNavigationView.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }
