@@ -25,7 +25,14 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCao6UhcDC4WP6SC-FZHNkZ_sI2Jpvyp8w" />
 
-        <activity android:name=".bitchGame"></activity>
+        <activity android:name=".bitchGame" />
+        <activity android:name=".InitialActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

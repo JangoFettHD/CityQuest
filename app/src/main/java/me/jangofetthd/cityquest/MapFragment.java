@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.luseen.spacenavigation.SpaceOnClickListener;
 
 
 public class MapFragment extends Fragment implements GoogleApiClient.OnConnectionFailedListener {
@@ -50,6 +51,7 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
     Marker school15;
     Marker bridge;
 
+    LatLng initGeo=null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,13 +74,16 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
             public void onMapReady(GoogleMap mMap) {
                 googleMap = mMap;
 
+                googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+                googleMap.getUiSettings().setMapToolbarEnabled(false);
+
                 if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     ((MainActivity) getContext()).requestLocationPermission();
                 }
                 googleMap.setMyLocationEnabled(true);
 
                 IGY = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.249991, 104.264174)).title("Путешествие по ИГУ").snippet("Замечательное описание").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                subway = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.248178, 104.268964)).title("Путешествие по Сабвею").snippet("Нужно съесть саб").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                subway = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.248178, 104.268964)).title("Путешествие по Сабвею").snippet("0").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                 trash = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.287103, 104.309872)).title("Борьба с бомжами").snippet("Выкиньте мусор, но при этом останьтесь в живых").zIndex(2).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
                 home = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.287943, 104.310949)).title("Home.. Sweet home").snippet("Поспать").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
                 school15 = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.276300, 104.285048)).title("Выучить стих по литре").snippet("Опять работа?").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
@@ -86,66 +91,105 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
 
                 final Marker[] db = {IGY, subway, home, trash, school15, bridge};
 
+                //Location f = LocationServices.FusedLocationApi.getLastLocation(
+                  //      MainActivity.mGoogleApiClient);
 
-                Location f = LocationServices.FusedLocationApi.getLastLocation(
-                        MainActivity.mGoogleApiClient);
+                //
+                // Acquire a reference to the system Location Manager
+                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+// Define a listener that responds to location updates
+                LocationListener locationListener = new LocationListener() {
+                    public void onLocationChanged(final Location location) {
+                        // Called when a new location is found by the network location provider.
+                        //makeUseOfNewLocation(location);
+                        checkNearMarkers(db, location);
+
+                        initGeo = new LatLng(location.getLatitude(), location.getLongitude());
+                        /////////
+                        googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+
+                            @Override
+                            public void onInfoWindowClick(final Marker marker) {
+
+                                if (isPosition(marker, location)) {
+
+                                    Log.d("", marker.getTitle());
+                                    String button = "Принять задание";
+                                    String extra = "";
+
+                                    if (marker.getZIndex() == 2) {
+                                        button = "В АТАКУ!";
+                                        extra = "\nВам дается 60 секунд, чтобы очистить территорию.";
+                                    }
 
 
-                googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-                    @Override
-                    public void onMyLocationChange(Location arg0) {
-                        // TODO Auto-generated method stub
-
-                        //if (getLocation() != null) {
-                        checkNearMarkers(db);
-                        //}
-
-                    }
-                });
-
-
-                googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-
-                    @Override
-                    public void onInfoWindowClick(final Marker marker) {
-
-                        if (isPosition(marker)) {
-
-                            Log.d("", marker.getTitle());
-                            String button = "Принять задание";
-                            String extra = "";
-
-                            if (marker.getZIndex() == 2) {
-                                button = "В АТАКУ!";
-                                extra = "\nВам дается 60 секунд, чтобы очистить территорию.";
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                    builder.setTitle(marker.getTitle())
+                                            .setMessage(marker.getSnippet() + extra)
+                                            .setCancelable(true)
+                                            .setNegativeButton(button,
+                                                    new DialogInterface.OnClickListener() {
+                                                        public void onClick(DialogInterface dialog, int id) {
+                                                            if (marker.getZIndex() == 2) {
+                                                                Intent intent = new Intent(getActivity(), bitchGame.class);
+                                                                getActivity().startActivity(intent);
+                                                            }
+                                                            dialog.cancel();
+                                                        }
+                                                    });
+                                    AlertDialog alert = builder.create();
+                                    alert.show();
+                                }
                             }
+                        });
+                        /////////
+                    }
 
+                    public void onStatusChanged(String provider, int status, Bundle extras) {}
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setTitle(marker.getTitle())
-                                    .setMessage(marker.getSnippet() + extra)
-                                    .setCancelable(true)
-                                    .setNegativeButton(button,
-                                            new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int id) {
-                                                    if (marker.getZIndex() == 2) {
-                                                        Intent intent = new Intent(getActivity(), bitchGame.class);
-                                                        getActivity().startActivity(intent);
-                                                    }
-                                                    dialog.cancel();
-                                                }
-                                            });
-                            AlertDialog alert = builder.create();
-                            alert.show();
+                    public void onProviderEnabled(String provider) {}
+
+                    public void onProviderDisabled(String provider) {}
+                };
+
+// Register the listener with the Location Manager to receive location updates
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+                //
+
+                /*MainActivity.spaceNavigationView.setSpaceOnClickListener(new SpaceOnClickListener() {
+                    @Override
+                    public void onCentreButtonClick() {
+                        Toast.makeText(getActivity(), "onCentreButtonClick", Toast.LENGTH_SHORT).show();
+                        //начальный зум
+                        CameraPosition cameraPosition;
+                        if (initGeo!=null){
+                            cameraPosition = new CameraPosition.Builder().target(initGeo).zoom(16).build();
+                        }else{
+                            LatLng IRK = new LatLng(52.285230, 104.306678);
+                            cameraPosition = new CameraPosition.Builder().target(IRK).zoom(16).build();
+                        }
+                        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    }
+                    @Override
+                    public void onItemClick(int itemIndex, String itemName) {
+                        Toast.makeText(getActivity(), itemIndex + " " + itemName, Toast.LENGTH_SHORT).show();
+                        switch (itemIndex) {
+                            case 1:
+                                ProfileFragment profileFragment0 = new ProfileFragment();
+                                MainActivity.fragmentManager.beginTransaction().replace(R.id.fragment_container, profileFragment0).commit();
+                                break;
+                            case 0:
+                                ShopFragment shopFragment = new ShopFragment();
+                                MainActivity.fragmentManager.beginTransaction().replace(R.id.fragment_container, shopFragment).commit();
+                                break;
                         }
                     }
-                });
+                    @Override
+                    public void onItemReselected(int itemIndex, String itemName) {
+                    }
+                });*/
 
-
-                LatLng IRK = new LatLng(52.285230, 104.306678);
-                // For zooming automatically to the location of the marker
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(IRK).zoom(20).build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
         });
 
@@ -154,10 +198,9 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
 
 
     //проверяет - есть ли рядом с нами маркеры из базы данных
-    public void checkNearMarkers(Marker[] db) {
-        Location loc = getLocation();
+    public void checkNearMarkers(Marker[] db, Location location) {
         for (Marker aDb : db) {
-            if (isPosition(aDb, loc)) {//Toast.makeText(getActivity(), "Вы рядом с "+db[i].getTitle(), Toast.LENGTH_LONG).show();
+            if (isPosition(aDb, location)) {//Toast.makeText(getActivity(), "Вы рядом с "+db[i].getTitle(), Toast.LENGTH_LONG).show();
                 Log.i("NEAR_MARKER", "Вы рядом с " + aDb.getTitle());
             }
         }
@@ -180,18 +223,14 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
     }
 
     //определяет находитесь ли вы рядом с определенным маркером
-    public boolean isPosition(Marker marker) {
-        double longitude = getLocation().getLongitude();
-        double latitude = getLocation().getLatitude();
-        LatLng markerLocation = marker.getPosition();
-        return ((latitude - 0.0005 < markerLocation.latitude) && (latitude + 0.0005 > markerLocation.latitude)) && ((longitude - 0.0005 < markerLocation.longitude) && (longitude + 0.0005 > markerLocation.longitude));
-    }
-
     public boolean isPosition(Marker marker, Location location) {
-        double longitude = location.getLongitude();
-        double latitude = location.getLatitude();
-        LatLng markerLocation = marker.getPosition();
-        return ((latitude - 0.0005 < markerLocation.latitude) && (latitude + 0.0005 > markerLocation.latitude)) && ((longitude - 0.0005 < markerLocation.longitude) && (longitude + 0.0005 > markerLocation.longitude));
+        if (location != null) {
+            double longitude = location.getLongitude();
+            double latitude = location.getLatitude();
+            LatLng markerLocation = marker.getPosition();
+            return ((latitude - 0.0007 < markerLocation.latitude) && (latitude + 0.0007 > markerLocation.latitude)) && ((longitude - 0.0007 < markerLocation.longitude) && (longitude + 0.0007 > markerLocation.longitude));
+        }
+        return false;
     }
 
 
@@ -222,5 +261,18 @@ public class MapFragment extends Fragment implements GoogleApiClient.OnConnectio
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    public void onCenterButtonClicked() {
+        Toast.makeText(getActivity(), "onCentreButtonClick", Toast.LENGTH_SHORT).show();
+        //начальный зум
+        CameraPosition cameraPosition;
+        if (initGeo!=null){
+            cameraPosition = new CameraPosition.Builder().target(initGeo).zoom(16).build();
+        }else{
+            LatLng IRK = new LatLng(52.285230, 104.306678);
+            cameraPosition = new CameraPosition.Builder().target(IRK).zoom(16).build();
+        }
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 }

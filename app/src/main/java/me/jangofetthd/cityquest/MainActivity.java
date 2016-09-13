@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -19,8 +20,8 @@ import com.luseen.spacenavigation.SpaceOnClickListener;
 
 public class MainActivity extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener {
 
-    SpaceNavigationView spaceNavigationView;
-    FragmentManager fragmentManager;
+    static SpaceNavigationView spaceNavigationView;
+    static FragmentManager fragmentManager;
 
     static GoogleApiClient mGoogleApiClient;
 
@@ -52,8 +53,19 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.On
             @Override
             public void onCentreButtonClick() {
                 Toast.makeText(MainActivity.this, "onCentreButtonClick", Toast.LENGTH_SHORT).show();
-                MapFragment profileFragment = new MapFragment();
-                fragmentManager.beginTransaction().replace(R.id.fragment_container, profileFragment).commit();
+                boolean flag = false;
+                MapFragment mapFragment = new MapFragment();
+                for (Fragment fragment : fragmentManager.getFragments()) {
+                    if (fragment instanceof MapFragment && fragment.isVisible()) {
+                        flag = true;
+                        mapFragment = (MapFragment) fragment;
+                    }
+                }
+                if (!flag) {
+                    fragmentManager.beginTransaction().replace(R.id.fragment_container, mapFragment).commit();
+                } else {
+                    mapFragment.onCenterButtonClicked();
+                }
             }
 
             @Override
