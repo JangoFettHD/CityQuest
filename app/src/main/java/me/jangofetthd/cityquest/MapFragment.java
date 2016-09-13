@@ -2,9 +2,12 @@ package me.jangofetthd.cityquest;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
@@ -12,6 +15,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,10 +39,18 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapFragment extends Fragment {
     MapView mMapView;
     private GoogleMap googleMap;
+    Marker IGY;
+    Marker subway;
+    Marker trash;
+    Marker home;
+    Marker school15;
+    Marker bridge;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_map, container, false);
+
 
         mMapView = (MapView) rootView.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
@@ -87,19 +99,71 @@ public class MapFragment extends Fragment {
                 });*/
 
                 // For dropping a marker at a point on the Map
-                Marker IGY = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.249991, 104.264174)).title("Путешествие по ИГУ").snippet("Замечательное описание"));
 
-                Marker subway = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.248178, 104.268964)).title("Путешествие по Сабвею").snippet("Нужно съесть саб"));
+                IGY = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.249991, 104.264174)).title("Путешествие по ИГУ").snippet("Замечательное описание").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                subway = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.248178, 104.268964)).title("Путешествие по Сабвею").snippet("Нужно съесть саб").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                trash = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.287103, 104.309872)).title("Борьба с бомжами").snippet("Выкиньте мусор, но при этом останьтесь в живых").zIndex(2).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                home = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.287943, 104.310949)).title("Home.. Sweet home").snippet("Поспать").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
+                school15 = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.276300, 104.285048)).title("Выучить стих по литре").snippet("Опять работа?").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                bridge = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.259222, 104.281125)).title("Сжечь мост").snippet("Он сжег мосты, но лодочку оставил...").zIndex(1).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
 
-                Marker home = googleMap.addMarker(new MarkerOptions().position(new LatLng(52.287943, 104.310949)).title("Home.. Sweet home").snippet("Поспать").icon(BitmapDescriptorFactory.fromResource(R.drawable.green)));
+                final Marker[] db= {IGY, subway, home, trash, school15, bridge};
 
-                Marker[] db= {IGY, subway, home};
 
-                checkNearMarkers(db);
+                googleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+                    @Override
+                    public void onMyLocationChange(Location arg0) {
+                        // TODO Auto-generated method stub
 
-                LatLng IRK = new LatLng(52.251252, 104.263750);
+                        //if (getLocation() != null) {
+                        checkNearMarkers(db);
+                        //}
+
+
+                    }
+                });
+
+                googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+
+                    @Override
+                    public void onInfoWindowClick(final Marker marker) {
+
+                        if(isPosition(marker)){
+
+                        Log.d("", marker.getTitle());
+                        String button = "Принять задание";
+                        String extra="";
+
+                        if (marker.getZIndex()==2){
+                            button = "В АТАКУ!";
+                            extra="\nВам дается 60 секунд, чтобы очистить территорию.";
+                        }
+
+
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setTitle(marker.getTitle())
+                                .setMessage(marker.getSnippet()+extra)
+                                .setCancelable(true)
+                                .setNegativeButton(button,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                if (marker.getZIndex()==2){
+                                                    Intent intent = new Intent(getActivity(), bitchGame.class);
+                                                    getActivity().startActivity(intent);
+                                                }
+                                                dialog.cancel();
+                                            }
+                                        });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }}
+                });
+
+
+                LatLng IRK = new LatLng(52.285230, 104.306678);
                 // For zooming automatically to the location of the marker
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(IRK).zoom(12).build();
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(IRK).zoom(20).build();
                 googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
         });
@@ -107,10 +171,14 @@ public class MapFragment extends Fragment {
         return rootView;
     }
 
+
     //проверяет - есть ли рядом с нами маркеры из базы данных
     public void checkNearMarkers(Marker[] db){
+        Location loc = getLocation();
         for (int i=0; i<db.length; i++){
-            if (isPosition(db[i])) Toast.makeText(getActivity(), "Вы рядом с "+db[i].getTitle(), Toast.LENGTH_LONG).show();
+            if (isPosition(db[i], loc)) {//Toast.makeText(getActivity(), "Вы рядом с "+db[i].getTitle(), Toast.LENGTH_LONG).show();
+                Log.i("NEAR_MARKER","Вы рядом с "+db[i].getTitle());
+            }
         }
     }
 
@@ -135,7 +203,18 @@ public class MapFragment extends Fragment {
         double longitude = getLocation().getLongitude();
         double latitude = getLocation().getLatitude();
         LatLng markerLocation = marker.getPosition();
-        if(((latitude-0.002<markerLocation.latitude)&&(latitude+0.002>markerLocation.latitude))&&((longitude-0.002<markerLocation.longitude)&&(longitude+0.002>markerLocation.longitude))){
+        if(((latitude-0.0005<markerLocation.latitude)&&(latitude+0.0005>markerLocation.latitude))&&((longitude-0.0005<markerLocation.longitude)&&(longitude+0.0005>markerLocation.longitude))){
+            return true;
+
+
+        } else return false;
+    }
+
+    public boolean isPosition(Marker marker, Location location){
+        double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
+        LatLng markerLocation = marker.getPosition();
+        if(((latitude-0.0005<markerLocation.latitude)&&(latitude+0.0005>markerLocation.latitude))&&((longitude-0.0005<markerLocation.longitude)&&(longitude+0.0005>markerLocation.longitude))){
             return true;
 
 
@@ -174,6 +253,7 @@ public class MapFragment extends Fragment {
             return true;
         }
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,

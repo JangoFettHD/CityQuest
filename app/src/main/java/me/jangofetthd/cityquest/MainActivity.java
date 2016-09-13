@@ -27,6 +27,9 @@ public class MainActivity extends FragmentActivity {
 
         fragmentManager = getSupportFragmentManager();
 
+        MapFragment profileFragment = new MapFragment();
+        fragmentManager.beginTransaction().replace(R.id.fragment_container, profileFragment).commit();
+
         spaceNavigationView.setSpaceOnClickListener(new SpaceOnClickListener() {
             @Override
             public void onCentreButtonClick() {
